@@ -9,4 +9,8 @@ public interface RegistrationService {
 
      void activateRegisteredUser(String token);
 
+     String resetPassword(String usernme);
+
+     void resetPassword(String token, String password, String confirmPassword);
+
 }

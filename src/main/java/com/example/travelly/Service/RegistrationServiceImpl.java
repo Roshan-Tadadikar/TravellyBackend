@@ -1,6 +1,7 @@
 package com.example.travelly.Service;
 
 import com.example.travelly.Dto.RegistrationRequest;
+import com.example.travelly.EmailSender.EmailSenderImpl;
 import com.example.travelly.Exceptions.CustomizedException;
 import com.example.travelly.Model.Register;
 import com.example.travelly.Model.Token;
@@ -10,8 +11,10 @@ import com.example.travelly.Repository.TokenRepo;
 import com.example.travelly.Repository.UserRepo;
 import com.example.travelly.Service.ServiceInterface.RegistrationService;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,7 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
@@ -34,6 +38,12 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private final EmailSenderImpl emailSender;
+
+    @Value("current-env-link")
+    String currentLink;
 
     @Override
     @Transactional
@@ -58,6 +68,8 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .expiredAt(LocalDateTime.now().plusMinutes(15))
                 .build();
         tokenRepo.save(newToken);
+        String link = currentLink+"/"+token;
+        emailSender.sendEmail(registeredUser.getEmail(),buildEmail(registeredUser.getName(), link));
         return token;
     }
 
@@ -80,5 +92,121 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .name(registeredUser.getEmail())
                 .build();
         userRepo.save(newUser);
+    }
+
+    @Override
+    public String resetPassword(String email) {
+        if(email==null || email.isEmpty()){
+            throw new CustomizedException("Error", "email cannot be empty");
+        }
+
+        Optional<Register> userExists = registerRepo.findByEmail(email);
+        if(!userExists.isPresent()){
+            throw new CustomizedException("Message","User doesn't exists!");
+        }
+
+        final String token = UUID.randomUUID().toString();
+        tokenRepo.save(new Token().toBuilder()
+                .token(token)
+                .createdAt(LocalDateTime.now())
+                .expiredAt(LocalDateTime.now().plusMinutes(15))
+                .user(userExists.get())
+                .build());
+        return token;
+    }
+
+    @Override
+    public void resetPassword(String token, String password, String confirmPassword) {
+        if(token==null || token.isEmpty()){
+            throw new CustomizedException("Token","Token cannot be Empty!");
+        }
+        if(token == null || token.isEmpty()
+           || password==null || password.isEmpty()
+           || confirmPassword== null || confirmPassword.isEmpty()){
+            throw new CustomizedException("Message", "Password cannot be empty! ");
+        }
+
+        Optional<Token> foundToken = tokenRepo.findByToken(token);
+        if(!foundToken.isPresent()){
+            throw new CustomizedException("Token", "Invalid token! ");
+        }
+
+        if(LocalDateTime.now().isAfter(foundToken.get().getExpiredAt())){
+            throw new CustomizedException("Token","Token expired, kindly reset again!");
+        }
+
+        
+
+
+
+    }
+
+    private String buildEmail(String name, String link) {
+        return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
+                "\n" +
+                "<span style=\"display:none;font-size:1px;color:#fff;max-height:0\"></span>\n" +
+                "\n" +
+                "  <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;min-width:100%;width:100%!important\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n" +
+                "    <tbody><tr>\n" +
+                "      <td width=\"100%\" height=\"53\" bgcolor=\"#0b0c0c\">\n" +
+                "        \n" +
+                "        <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;max-width:580px\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" align=\"center\">\n" +
+                "          <tbody><tr>\n" +
+                "            <td width=\"70\" bgcolor=\"#0b0c0c\" valign=\"middle\">\n" +
+                "                <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse\">\n" +
+                "                  <tbody><tr>\n" +
+                "                    <td style=\"padding-left:10px\">\n" +
+                "                  \n" +
+                "                    </td>\n" +
+                "                    <td style=\"font-size:28px;line-height:1.315789474;Margin-top:4px;padding-left:10px\">\n" +
+                "                      <span style=\"font-family:Helvetica,Arial,sans-serif;font-weight:700;color:#ffffff;text-decoration:none;vertical-align:top;display:inline-block\">Confirm your email</span>\n" +
+                "                    </td>\n" +
+                "                  </tr>\n" +
+                "                </tbody></table>\n" +
+                "              </a>\n" +
+                "            </td>\n" +
+                "          </tr>\n" +
+                "        </tbody></table>\n" +
+                "        \n" +
+                "      </td>\n" +
+                "    </tr>\n" +
+                "  </tbody></table>\n" +
+                "  <table role=\"presentation\" class=\"m_-6186904992287805515content\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;max-width:580px;width:100%!important\" width=\"100%\">\n" +
+                "    <tbody><tr>\n" +
+                "      <td width=\"10\" height=\"10\" valign=\"middle\"></td>\n" +
+                "      <td>\n" +
+                "        \n" +
+                "                <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse\">\n" +
+                "                  <tbody><tr>\n" +
+                "                    <td bgcolor=\"#1D70B8\" width=\"100%\" height=\"10\"></td>\n" +
+                "                  </tr>\n" +
+                "                </tbody></table>\n" +
+                "        \n" +
+                "      </td>\n" +
+                "      <td width=\"10\" valign=\"middle\" height=\"10\"></td>\n" +
+                "    </tr>\n" +
+                "  </tbody></table>\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "  <table role=\"presentation\" class=\"m_-6186904992287805515content\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;max-width:580px;width:100%!important\" width=\"100%\">\n" +
+                "    <tbody><tr>\n" +
+                "      <td height=\"30\"><br></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
+                "      <td style=\"font-family:Helvetica,Arial,sans-serif;font-size:19px;line-height:1.315789474;max-width:560px\">\n" +
+                "        \n" +
+                "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Hi " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 15 minutes. <p>See you soon</p>" +
+                "        \n" +
+                "      </td>\n" +
+                "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td height=\"30\"><br></td>\n" +
+                "    </tr>\n" +
+                "  </tbody></table><div class=\"yj6qo\"></div><div class=\"adL\">\n" +
+                "\n" +
+                "</div></div>";
     }
 }

@@ -24,6 +24,6 @@ public class Token {
     private LocalDateTime consumedAt;
     private LocalDateTime expiredAt;
     @ManyToOne
-    @JoinColumn(name = "registration_id")
+    @JoinColumn(name = "registration_id",nullable = false)
     private Register user;
 }
