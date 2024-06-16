@@ -5,15 +5,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@Table
-@Entity
-@Builder(toBuilder = true)
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class Register {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

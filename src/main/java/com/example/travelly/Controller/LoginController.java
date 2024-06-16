@@ -27,19 +27,5 @@ public class LoginController {
         return new ResponseEntity(viewName, HttpStatus.OK);
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity resetPassword(@PathVariable String username){
-        log.info("*** Inside reset Password Controller ***");
-        String token = registrationService.resetPassword(username);
-        return new ResponseEntity(token, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{token")
-    public ResponseEntity resetPassword(@RequestParam String password, @RequestParam String confirmPassword,
-                                        @PathVariable String token){
-        log.info("*** Inside resetPassword Controller ***");
-        registrationService.resetPassword(token, password, confirmPassword);
-        return new ResponseEntity("Password changed successfully, kindly login !", HttpStatus.OK);
-    }
 
 }

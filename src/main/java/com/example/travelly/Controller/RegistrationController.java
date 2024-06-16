@@ -35,13 +35,28 @@ public class RegistrationController {
     }
 
     @GetMapping("/{token}")
-    public ResponseEntity activateRegisteredUser(@PathVariable(name = "token") String token) {
+    public ResponseEntity<String> activateRegisteredUser(@PathVariable("token") String token) {
         log.info("*** Inside activateRegisteredUser controller ***");
-        if(token == null){
+        if (token == null) {
             throw new CustomizedException("Message", "Invalid User");
         }
         registrationService.activateRegisteredUser(token);
-        return new ResponseEntity("User activated successfully !", HttpStatus.OK);
+        return new ResponseEntity<>("User activated successfully!", HttpStatus.OK);
+    }
+
+    @GetMapping("/reset")
+    public ResponseEntity resetPassword(@RequestParam String username){
+        log.info("*** Inside reset Password Controller ***");
+        String token = registrationService.resetPassword(username);
+        return new ResponseEntity(token, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/reset/{token}")
+    public ResponseEntity resetPassword(@RequestParam String password, @RequestParam String confirmPassword,
+                                        @PathVariable String token){
+        log.info("*** Inside resetPassword Controller ***");
+        registrationService.resetPassword(token, password, confirmPassword);
+        return new ResponseEntity("Password changed successfully, kindly login !", HttpStatus.OK);
     }
 
 

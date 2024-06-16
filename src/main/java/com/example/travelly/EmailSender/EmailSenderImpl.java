@@ -14,13 +14,12 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 @Slf4j
-@Async
 public class EmailSenderImpl implements EmailSender{
 
-    @Autowired
-    private final JavaMailSender mailSender;
+    public final JavaMailSender mailSender;
 
     @Override
+    @Async
     public void sendEmail(String to, String email) {
         try{
             MimeMessage mimeMessage = mailSender.createMimeMessage();

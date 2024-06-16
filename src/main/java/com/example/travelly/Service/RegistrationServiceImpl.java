@@ -27,23 +27,14 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RegistrationServiceImpl implements RegistrationService {
 
-    @Autowired
     private UserRepo userRepo;
-
-    @Autowired
     private RegistrationRepo registerRepo;
-
-    @Autowired
     private TokenRepo tokenRepo;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
+    private PasswordEncoder passwordEncoder;
     private final EmailSenderImpl emailSender;
 
-    @Value("current-env-link")
-    String currentLink;
+//    @Value("${current-env-link}")
+//    String currentLink;
 
     @Override
     @Transactional
@@ -52,24 +43,41 @@ public class RegistrationServiceImpl implements RegistrationService {
         if (ifUserExists.isPresent()) {
             throw new CustomizedException("Message", "User " + newUser.getEmail() + " already exits kindly login !");
         }
+        Optional<Register> alreadyRegistered = registerRepo.findByEmail(newUser.getEmail());
+        Register registerUser;
+        Token newToken=null;
+        String token = null;
+        if (alreadyRegistered.isPresent()) {
+            registerUser = alreadyRegistered.get();
+            registerUser.builder().createdAt(LocalDateTime.now()).build();
+            Token foundToken = tokenRepo.findByUserId(registerUser.getId());
+            if(foundToken.getExpiredAt().isAfter(LocalDateTime.now())){
+                newToken=foundToken;
+                token=foundToken.getToken();
+            }
+        } else {
+            registerUser = new Register().builder()
+                    .name(newUser.getFullName())
+                    .email(newUser.getEmail())
+                    .password(passwordEncoder.encode(newUser.getPassword()))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        }
 
-        Register registerUser = new Register().builder()
-                .name(newUser.getFullName())
-                .email(newUser.getEmail())
-                .password(passwordEncoder.encode(newUser.getPassword()))
-                .createdAt(LocalDateTime.now())
-                .build();
         Register registeredUser = registerRepo.save(registerUser);
-        final String token = UUID.randomUUID().toString();
-        Token newToken = new Token().builder()
-                .token(token)
-                .user(registeredUser)
-                .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusMinutes(15))
-                .build();
-        tokenRepo.save(newToken);
-        String link = currentLink+"/"+token;
-        emailSender.sendEmail(registeredUser.getEmail(),buildEmail(registeredUser.getName(), link));
+
+        if(newToken==null){
+            token = UUID.randomUUID().toString();
+            newToken = new Token().builder()
+                    .token(token)
+                    .user(registeredUser)
+                    .createdAt(LocalDateTime.now())
+                    .expiredAt(LocalDateTime.now().plusMinutes(15))
+                    .build();
+            tokenRepo.save(newToken);
+        }
+        String link = "https://localhost:8080/register/+" + token;
+        emailSender.sendEmail(registeredUser.getEmail(), buildEmail(registeredUser.getName(), link));
         return token;
     }
 
@@ -90,19 +98,20 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .createdAt(LocalDateTime.now())
                 .email(registeredUser.getEmail())
                 .name(registeredUser.getEmail())
+                .password(registeredUser.getPassword())
                 .build();
         userRepo.save(newUser);
     }
 
     @Override
     public String resetPassword(String email) {
-        if(email==null || email.isEmpty()){
+        if (email == null || email.isEmpty()) {
             throw new CustomizedException("Error", "email cannot be empty");
         }
 
         Optional<Register> userExists = registerRepo.findByEmail(email);
-        if(!userExists.isPresent()){
-            throw new CustomizedException("Message","User doesn't exists!");
+        if (!userExists.isPresent()) {
+            throw new CustomizedException("Message", "User doesn't exists!");
         }
 
         final String token = UUID.randomUUID().toString();
@@ -117,28 +126,31 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     public void resetPassword(String token, String password, String confirmPassword) {
-        if(token==null || token.isEmpty()){
-            throw new CustomizedException("Token","Token cannot be Empty!");
+        if (token == null || token.isEmpty()) {
+            throw new CustomizedException("Token", "Token cannot be Empty!");
         }
-        if(token == null || token.isEmpty()
-           || password==null || password.isEmpty()
-           || confirmPassword== null || confirmPassword.isEmpty()){
+        if (token == null || token.isEmpty()
+                || password == null || password.isEmpty()
+                || confirmPassword == null || confirmPassword.isEmpty()) {
             throw new CustomizedException("Message", "Password cannot be empty! ");
         }
 
+        if (!password.equals(confirmPassword)) {
+            throw new CustomizedException("Message", "Oops !! password aren't matching !!");
+        }
+
         Optional<Token> foundToken = tokenRepo.findByToken(token);
-        if(!foundToken.isPresent()){
+        if (!foundToken.isPresent()) {
             throw new CustomizedException("Token", "Invalid token! ");
         }
 
-        if(LocalDateTime.now().isAfter(foundToken.get().getExpiredAt())){
-            throw new CustomizedException("Token","Token expired, kindly reset again!");
+        if (LocalDateTime.now().isAfter(foundToken.get().getExpiredAt())) {
+            throw new CustomizedException("Token", "Token expired, kindly reset again!");
         }
 
-        
-
-
-
+        Register updateUser = foundToken.get().getUser();
+        updateUser.setPassword(passwordEncoder.encode(password));
+        registerRepo.save(updateUser);
     }
 
     private String buildEmail(String name, String link) {
