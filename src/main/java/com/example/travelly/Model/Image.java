@@ -1,13 +1,20 @@
 package com.example.travelly.Model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "Images")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Image {
 
     @Id
@@ -15,7 +22,8 @@ public class Image {
     private Integer id;
     private String name;
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] content;
-    private Date addedTime;
-    private Date updatedTime;
+    private LocalDateTime addedTime;
+    private LocalDateTime updatedTime;
 }

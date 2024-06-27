@@ -28,6 +28,7 @@ public class EmailSenderImpl implements EmailSender{
             helper.setTo(to);
             helper.setSubject("Confirm your email");
             helper.setFrom("nogava4457@fna6.com");
+            mailSender.send(mimeMessage);
         }catch (MessagingException e){
          log.error("Error sending mail", e);
          throw new CustomizedException("Error","Error sending mail");

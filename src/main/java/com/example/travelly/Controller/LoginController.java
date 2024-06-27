@@ -17,15 +17,12 @@ public class LoginController {
     @Autowired
     LoginServiceImpl loginService;
 
-    @Autowired
-    RegistrationServiceImpl registrationService;
-
-    @PostMapping
-    public ResponseEntity login(@RequestBody Logindto request){
-        log.info("*** Inside login controller ***");
-        String viewName =  loginService.login(request);
-        return new ResponseEntity(viewName, HttpStatus.OK);
+    @GetMapping
+    public String loginHere(){
+        log.info("*** Inside getMapping login controller ***");
+        return "welcome User!";
     }
+
 
 
 }

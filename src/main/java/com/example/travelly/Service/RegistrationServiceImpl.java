@@ -4,9 +4,11 @@ import com.example.travelly.Dto.RegistrationRequest;
 import com.example.travelly.EmailSender.EmailSenderImpl;
 import com.example.travelly.Exceptions.CustomizedException;
 import com.example.travelly.Model.Register;
+import com.example.travelly.Model.Roles;
 import com.example.travelly.Model.Token;
 import com.example.travelly.Model.User;
 import com.example.travelly.Repository.RegistrationRepo;
+import com.example.travelly.Repository.RolesRepo;
 import com.example.travelly.Repository.TokenRepo;
 import com.example.travelly.Repository.UserRepo;
 import com.example.travelly.Service.ServiceInterface.RegistrationService;
@@ -32,6 +34,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private TokenRepo tokenRepo;
     private PasswordEncoder passwordEncoder;
     private final EmailSenderImpl emailSender;
+    private RolesRepo rolesRepo;
 
 //    @Value("${current-env-link}")
 //    String currentLink;
@@ -76,7 +79,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .build();
             tokenRepo.save(newToken);
         }
-        String link = "https://localhost:8080/register/+" + token;
+        String link = "http://localhost:8080/register/" + token;
         emailSender.sendEmail(registeredUser.getEmail(), buildEmail(registeredUser.getName(), link));
         return token;
     }
@@ -93,12 +96,14 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new CustomizedException("Message", "Token has expired kindly register again !");
         }
         Register registeredUser = foundToken.get().getUser();
+        Roles role = rolesRepo.findByRoleName("USER");
 
         User newUser = new User().builder()
                 .createdAt(LocalDateTime.now())
                 .email(registeredUser.getEmail())
                 .name(registeredUser.getEmail())
                 .password(registeredUser.getPassword())
+                .roles(role)
                 .build();
         userRepo.save(newUser);
     }

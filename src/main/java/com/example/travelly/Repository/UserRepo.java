@@ -12,6 +12,6 @@ public interface UserRepo extends JpaRepository<User,Integer> {
 
      Optional<User> findByEmail(String email);
 
-     @Query("Select * from User u order by id desc")
+     @Query("Select u from User u order by id desc")
      List<User> findAllLatestUsers(Pageable pageable);
 }

@@ -35,13 +35,13 @@ public class RegistrationController {
     }
 
     @GetMapping("/{token}")
-    public ResponseEntity<String> activateRegisteredUser(@PathVariable("token") String token){
+    public String activateRegisteredUser(@PathVariable("token") String token){
         log.info("*** Inside activateRegisteredUser controller ***");
         if (token == null) {
             throw new CustomizedException("Message", "Invalid User");
         }
         registrationService.activateRegisteredUser(token);
-        return new ResponseEntity<>("User activated successfully!", HttpStatus.OK);
+        return "User activated successfully!";
     }
 
     @GetMapping("/reset")
