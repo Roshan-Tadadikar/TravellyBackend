@@ -12,7 +12,9 @@ import java.util.*;
 
 @Getter
 @Setter
-@Table
+@Table(
+        uniqueConstraints = @UniqueConstraint(name = "email", columnNames = "email")
+)
 @Entity
 @Builder(toBuilder = true)
 @AllArgsConstructor

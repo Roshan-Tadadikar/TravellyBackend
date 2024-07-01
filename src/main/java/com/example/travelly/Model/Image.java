@@ -1,17 +1,15 @@
 package com.example.travelly.Model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "Images")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,4 +24,7 @@ public class Image {
     private byte[] content;
     private LocalDateTime addedTime;
     private LocalDateTime updatedTime;
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Posts posts;
 }

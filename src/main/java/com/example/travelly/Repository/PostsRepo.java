@@ -12,4 +12,5 @@ import java.util.List;
 public interface PostsRepo extends JpaRepository<Posts, Integer> {
 
     List<Posts> findAllByUserId(@Param("userId")Integer userId, Pageable pageable);
+    void deleteByIdAndUserId(Integer id, Integer userId);
 }

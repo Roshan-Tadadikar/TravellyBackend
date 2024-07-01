@@ -11,6 +11,4 @@ public interface HomeService {
 
     List<Postdto> getAllMyFollowersAndFollowingPosts(String orderBy);
     List<Userdto> getSuggestedUsers();
-    void addPost(String content, List<MultipartFile> file);
-    Postdto updatePost(String updatedContent, Integer postId, List<MultipartFile> files);
 }

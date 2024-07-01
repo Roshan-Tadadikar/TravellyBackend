@@ -14,4 +14,5 @@ public interface UserRepo extends JpaRepository<User,Integer> {
 
      @Query("Select u from User u order by id desc")
      List<User> findAllLatestUsers(Pageable pageable);
+
 }
