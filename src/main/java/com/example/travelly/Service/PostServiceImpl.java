@@ -3,9 +3,11 @@ package com.example.travelly.Service;
 import com.example.travelly.Dto.Postdto;
 import com.example.travelly.Exceptions.CustomizedException;
 import com.example.travelly.Model.Image;
+import com.example.travelly.Model.Likes;
 import com.example.travelly.Model.Posts;
 import com.example.travelly.Model.User;
 import com.example.travelly.Repository.ImageRepo;
+import com.example.travelly.Repository.LikeRepo;
 import com.example.travelly.Repository.PostsRepo;
 import com.example.travelly.Service.ServiceInterface.PostService;
 import jakarta.transaction.Transactional;
@@ -28,15 +30,42 @@ public class PostServiceImpl implements PostService {
     private PostsRepo postsRepo;
     private ImageRepo imageRepo;
     private ModelMapper modelMapper;
+    private LikeRepo likeRepo;
 
     @Override
+    @Transactional
     public void toggleLike(Integer postId) {
-
+        if (postId == null) {
+            throw new CustomizedException("Message", "Invalid credentials! ");
+        }
+        User loggedInUser = customUserDetailsService.getLoggedInUserDetails();
+        Optional<Likes> likedByUser = likeRepo.findByUsersAndPosts(loggedInUser.getId(), postId);
+        if (likedByUser.isPresent()) {
+            likeRepo.deleteById(likedByUser.get().getLikeId());
+        } else {
+            Optional<Posts> posts = postsRepo.findById(postId);
+            Likes like = new Likes().builder()
+                    .posts(posts.get())
+                    .users(loggedInUser)
+                    .addedTime(LocalDateTime.now())
+                    .build();
+            likeRepo.save(like);
+        }
     }
 
     @Override
     public void toggleBookmark(Integer postId) {
+        if (postId == null) {
+            throw new CustomizedException("Message", "Invalid credentials! ");
+        }
 
+        Optional<Posts> foundPost = postsRepo.findById(postId);
+        Posts posts;
+        if(foundPost.isPresent()){
+             posts = foundPost.get();
+            posts.setIsBookmark((posts.getIsBookmark() == null || posts.getIsBookmark() == 0) ? 1 : 0);
+            postsRepo.save(posts);
+        }
     }
 
     @Transactional

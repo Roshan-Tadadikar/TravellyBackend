@@ -34,4 +34,6 @@ public class Posts {
     private Set<Comments> comments;
     @OneToMany(mappedBy = "posts", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
+    @OneToMany(mappedBy = "posts")
+    private Set<Likes> likes;
 }

@@ -44,4 +44,20 @@ public class PostController {
         postService.deletePost(id);
         return new ResponseEntity("Post Delete Successfully !!", HttpStatus.OK);
     }
+
+    // will allow to like a post
+    @PostMapping("/like/{id}")
+    public ResponseEntity<String> toggleLike(@PathVariable Integer id) {
+        log.info("*** Inside toggleLike controller ***");
+        postService.toggleLike(id);
+        return new ResponseEntity("Post Liked Successfully !!", HttpStatus.OK);
+    }
+
+    // will allow to bookmark a post
+    @PostMapping("/bookmark/{id}")
+    public ResponseEntity<String> toggleBookmark(@PathVariable Integer id) {
+        log.info("*** Inside toggleBookmark controller ***");
+        postService.toggleBookmark(id);
+        return new ResponseEntity("Post Bookmarked Successfully !!", HttpStatus.OK);
+    }
 }
