@@ -9,7 +9,9 @@ public interface PostService {
     void toggleLike(Integer postId);
     void toggleBookmark(Integer postId);
     void deletePost(Integer postId);
-    void addComment(String comment, Integer commenterId, Integer postId);
     void addPost(String content, List<MultipartFile> file);
     Postdto updatePost(String updatedContent, Integer postId, List<MultipartFile> files);
+    void addComment(Integer postId, String comment);
+    void editComment(Integer commentId, String comment);
+    void deleteComment( Integer commentId);
 }

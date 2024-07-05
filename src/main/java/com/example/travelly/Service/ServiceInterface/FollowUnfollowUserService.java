@@ -4,8 +4,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface FollowUnfollowUserService {
 
-    public ResponseEntity followUser(String email);
-
-    public ResponseEntity unfollowUser(String email);
+    String followUnfollowUser(String userId);
 
 }

@@ -38,7 +38,7 @@ public class PostController {
     }
 
     // will allow to delete a post
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@PathVariable Integer id) {
         log.info("*** Inside deletePost controller ***");
         postService.deletePost(id);
@@ -60,4 +60,30 @@ public class PostController {
         postService.toggleBookmark(id);
         return new ResponseEntity("Post Bookmarked Successfully !!", HttpStatus.OK);
     }
+
+    // will allow to add comment on a post
+    @PostMapping("/comment/{postId}")
+    public ResponseEntity<String> addComment(@PathVariable Integer postId, @RequestParam String comment) {
+        log.info("*** Inside addComment controller ***");
+        postService.addComment(postId, comment);
+        return ResponseEntity.ok("Comment Added Successfully !!");
+    }
+
+    // will allow to edit a  comment on a post
+    @PostMapping("/comment/update/{commentId}")
+    public ResponseEntity<String> editComment(@PathVariable Integer commentId, @RequestParam(name = "comment") String comment) {
+        log.info("*** Inside editComment controller ***");
+        postService.editComment(commentId, comment);
+        return new ResponseEntity("Comment Edited Successfully !!", HttpStatus.OK);
+    }
+
+    // will allow to delete a comment on a post
+    @DeleteMapping("/comment/{id}")
+    public ResponseEntity<String> deleteComment(@PathVariable Integer id) {
+        log.info("*** Inside deleteComment controller ***");
+        postService.deleteComment(id);
+        return new ResponseEntity("Comment Deleted Successfully !!", HttpStatus.OK);
+    }
+
+
 }

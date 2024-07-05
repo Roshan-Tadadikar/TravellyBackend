@@ -22,6 +22,8 @@ public class Posts {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
     private Integer isBookmark;
     private LocalDateTime addedTime;

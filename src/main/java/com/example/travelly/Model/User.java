@@ -32,7 +32,7 @@ public class User implements UserDetails {
     private Image image;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    @OneToOne
+    @ManyToOne
     private Roles roles;
 
 

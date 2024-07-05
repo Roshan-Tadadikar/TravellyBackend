@@ -2,10 +2,8 @@ package com.example.travelly.Service;
 
 import com.example.travelly.Dto.Postdto;
 import com.example.travelly.Exceptions.CustomizedException;
-import com.example.travelly.Model.Image;
-import com.example.travelly.Model.Likes;
-import com.example.travelly.Model.Posts;
-import com.example.travelly.Model.User;
+import com.example.travelly.Model.*;
+import com.example.travelly.Repository.CommentRepo;
 import com.example.travelly.Repository.ImageRepo;
 import com.example.travelly.Repository.LikeRepo;
 import com.example.travelly.Repository.PostsRepo;
@@ -31,6 +29,7 @@ public class PostServiceImpl implements PostService {
     private ImageRepo imageRepo;
     private ModelMapper modelMapper;
     private LikeRepo likeRepo;
+    private CommentRepo commentRepo;
 
     @Override
     @Transactional
@@ -83,10 +82,6 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    @Override
-    public void addComment(String comment, Integer commenterId, Integer postId) {
-
-    }
 
     @Transactional
     @Override
@@ -167,6 +162,51 @@ public class PostServiceImpl implements PostService {
         Posts savedPost = postsRepo.save(foundPost);
 
         return modelMapper.map(savedPost, Postdto.class);
+    }
+
+    @Override
+    public void addComment(Integer postId, String comment) {
+        if(postId == null ){
+            throw new CustomizedException("Message","Can't add comment without post !");
+        }
+
+        if(comment == null || comment.isEmpty()){
+            throw new CustomizedException("Comment","Can't be empty!");
+        }
+        Optional<Posts> foundPost = postsRepo.findById(postId);
+        Posts post = foundPost.get();
+        User loggedInUser = customUserDetailsService.getLoggedInUserDetails();
+        Comments comments = new Comments()
+                .builder()
+                .content(comment)
+                .addedDate(LocalDateTime.now())
+                .post(post)
+                .user(loggedInUser)
+                .build();
+        commentRepo.save(comments);
+    }
+
+    @Override
+    public void editComment(Integer commentId, String comment) {
+        if(commentId == null || comment == null || comment.isEmpty()){
+            throw new CustomizedException("Message","Something wen't wrong !");
+        }
+
+        Comments comments = new Comments()
+                .builder()
+                .id(commentId)
+                .content(comment)
+                .updatedDate(LocalDateTime.now())
+                .build();
+        commentRepo.save(comments);
+    }
+
+    @Override
+    public void deleteComment(Integer commentId) {
+        if(commentId == null || commentId <1){
+            throw new CustomizedException("Message","Something went wrong!");
+        }
+        commentRepo.deleteById(commentId);
     }
 
 }

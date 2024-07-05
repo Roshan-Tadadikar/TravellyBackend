@@ -14,9 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Set;
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class Postdto {
 
     private Integer id;
@@ -25,5 +22,5 @@ public class Postdto {
     private LocalDateTime addedTime;
     private LocalDateTime updatedTime;
     private Set<Imagedto> images;
-    private Set<Comments> comments;
+    private Set<CommentsDto> comments;
 }

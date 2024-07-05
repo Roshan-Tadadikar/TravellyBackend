@@ -101,7 +101,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         User newUser = new User().builder()
                 .createdAt(LocalDateTime.now())
                 .email(registeredUser.getEmail())
-                .name(registeredUser.getEmail())
+                .name(registeredUser.getName())
                 .password(registeredUser.getPassword())
                 .roles(role)
                 .build();
